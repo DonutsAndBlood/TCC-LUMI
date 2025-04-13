@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from bot.commands import geral
+from bot.commands import geral, voice
 from bot.config import DISCORD_TOKEN
 
 intents = discord.Intents.default()
@@ -16,4 +16,5 @@ async def on_ready():
 
 async def run_bot():
     await bot.add_cog(geral.Geral(bot))
+    await bot.add_cog(voice.Voice(bot))
     await bot.start(DISCORD_TOKEN)
