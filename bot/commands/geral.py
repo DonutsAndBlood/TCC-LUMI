@@ -25,3 +25,8 @@ class Geral(commands.Cog, name="Comandos Gerais"):  # Categoriza o Cog como "Com
         embed.add_field(name="!ajuda", value="Mostra essa mensagem de ajuda", inline=False)
 
         await ctx.send(embed=embed)
+
+    @commands.command(name="desligar", help="Desliga o bot")
+    async def desligar(self, ctx):
+        await ctx.send("Indo dormir... 😴")
+        await self.bot.close()
