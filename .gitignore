@@ -1,1 +1,5 @@
 .env
+bot-env/
+.mypy_cache/
+**/__pycache__/
+temp_audio/
