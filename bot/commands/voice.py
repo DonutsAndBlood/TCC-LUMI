@@ -3,6 +3,7 @@ from discord.ext import commands
 import asyncio
 import os
 from pydub import AudioSegment, silence
+from voice.transcriber import transcribe_audio
 
 connections = {}
 
@@ -32,19 +33,24 @@ class Voice(commands.Cog, name="Comandos de Voz"):
             sink = discord.sinks.WaveSink()
 
             # Começar a gravar
-            vc.start_recording(
-                sink,
-                self.once_done,
-                ctx
-            )
-            
-            await asyncio.sleep(5)  # ← ajustar tempo ocioso
-            
+            try:
+                vc.start_recording(
+                    sink,
+                    self.once_done,
+                    ctx
+                )
+            except:
+                await ctx.send("Já está gravando")
+                await asyncio.sleep(10)
+                continue
+
+            await asyncio.sleep(10)  #TEMPO DE GRAVAÇÃO
+
             if self.gravando:
                 vc.stop_recording()
 
             # Esperar o sink processar
-            await asyncio.sleep(1)  # Pequeno delay para evitar conflito
+            await asyncio.sleep(1)
 
     async def once_done(self, sink: discord.sinks.WaveSink, ctx: discord.context, *args):
         for user_id, audio in sink.audio_data.items():
@@ -55,9 +61,8 @@ class Voice(commands.Cog, name="Comandos de Voz"):
             with open(file_path, "wb") as f:
                 f.write(audio.file.getbuffer())
 
-            # Se ainda está gravando, recomeçar a gravar
-        if self.gravando:
-            await self.gravar_loop(ctx, sink.vc)
+            texto = transcribe_audio(file_path)
+            await ctx.send(f"🎙️ Transcrição do <@{user_id}>: {texto}")
 
     @commands.command()
     async def parar(self, ctx):

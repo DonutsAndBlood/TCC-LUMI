@@ -4,3 +4,4 @@ PyNaCl
 ffmpeg
 SpeechRecognition
 pydub
+py-cord
