@@ -3,7 +3,7 @@ from discord.ext import commands
 import asyncio
 import os
 from pydub import AudioSegment, silence
-from voice.transcriber import transcribe_audio
+from bot.voice.transcriber import transcribe_audio
 
 connections = {}
 
@@ -77,5 +77,8 @@ class Voice(commands.Cog, name="Comandos de Voz"):
 
         await ctx.send("Gravação finalizada!")
 
-async def setup(bot):
-    await bot.add_cog(Voice(bot))
+def setup(bot):
+    print("Voice carregando")
+    bot.add_cog(Voice(bot))
+    print("Voice carregado")
+    return [Voice(bot)]

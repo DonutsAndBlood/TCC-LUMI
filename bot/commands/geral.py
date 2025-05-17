@@ -30,3 +30,9 @@ class Geral(commands.Cog, name="Comandos Gerais"):  # Categoriza o Cog como "Com
     async def desligar(self, ctx):
         await ctx.send("Indo dormir... 😴")
         await self.bot.close()
+
+def setup(bot):
+    print("Geral carregando")
+    bot.add_cog(Geral(bot))
+    print("Geral carregado")
+    return [Geral(bot)]
