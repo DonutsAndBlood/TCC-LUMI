@@ -9,7 +9,7 @@ intents.message_content = True
 intents.members = True
 intents.voice_states = True
 
-bot = commands.Bot(intents=intents)
+bot = commands.Bot(command_prefix="!", intents=intents)
 cogs = [
     "bot.commands.geral",
     "bot.commands.voice",
