@@ -1,4 +1,5 @@
 import asyncio
+from io import BytesIO
 import os
 
 import discord
@@ -56,24 +57,20 @@ class Voice(commands.Cog, name="Comandos de Voz"):
     async def once_done(
         self,
         sink: discord.sinks.WaveSink,
-        ctx: discord.context,
+        ctx: discord.ApplicationContext,
         *args,
     ):
-        for user_id, audio in sink.audio_data.items():
-            file_path = os.path.join(
-                os.path.dirname(__file__),
-                "..",
-                "..",
-                "temp_audio",
-                f"temp_{user_id}.wav",
-            )
+        if sink.vc is None or sink.vc.decoder is None:
+            await ctx.send("Erro ao realizar transcrição.")
+            print("Erro ao trancrever áudio: 'sink.vc.decoder' não encontrado")
+            self.gravando = False
+            return
 
-            # Salvar o arquivo corretamente na pasta temp_audio
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-            with open(file_path, "wb") as f:
-                f.write(audio.file.getbuffer())
+        audio_data: dict[int, discord.sinks.AudioData] = sink.audio_data
+        for user_id, audio in audio_data.items():
+            audio_file: BytesIO = audio.file
 
-            texto = transcribe_audio(file_path)
+            texto = transcribe_audio(audio_file)
             await ctx.send(f"🎙️ Transcrição do <@{user_id}>: {texto}")
 
     @commands.command()
