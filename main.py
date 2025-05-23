@@ -28,5 +28,4 @@ async def on_ready():
 
 
 Model.load_model()
-print("Whisper model loaded")
 bot.run(DISCORD_TOKEN)
