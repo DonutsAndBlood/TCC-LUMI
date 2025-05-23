@@ -4,7 +4,8 @@ import requests
 import asyncio
 import os
 
-BASE_URL = "https://vlibras.gov.br/api"
+BASE_URL = "https://traducao2.vlibras.gov.br/translate"
+
 
 class Tradutor(commands.Cog, name="Comando Tradutor"):
     def __init__(self, bot):
@@ -35,7 +36,9 @@ class Tradutor(commands.Cog, name="Comando Tradutor"):
                     break
                 await asyncio.sleep(2)
             else:
-                await ctx.send("⏳ Tradução demorou demais. Tente novamente mais tarde.")
+                await ctx.send(
+                    "⏳ Tradução demorou demais. Tente novamente mais tarde."
+                )
                 return
 
             # 4. Baixar vídeo
@@ -52,6 +55,7 @@ class Tradutor(commands.Cog, name="Comando Tradutor"):
 
         except Exception as e:
             await ctx.send(f"❌ Erro ao traduzir: `{str(e)}`")
+
 
 def setup(bot):
     print("Tradutor carregando")

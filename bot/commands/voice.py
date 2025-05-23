@@ -1,11 +1,13 @@
-import discord
-from discord.ext import commands
 import asyncio
 import os
+
+import discord
+from discord.ext import commands
 from pydub import AudioSegment, silence
 from bot.voice.transcriber import transcribe_audio
 
 connections = {}
+
 
 class Voice(commands.Cog, name="Comandos de Voz"):
     def __init__(self, bot):
@@ -34,17 +36,13 @@ class Voice(commands.Cog, name="Comandos de Voz"):
 
             # Começar a gravar
             try:
-                vc.start_recording(
-                    sink,
-                    self.once_done,
-                    ctx
-                )
+                vc.start_recording(sink, self.once_done, ctx)
             except:
                 await ctx.send("Já está gravando")
                 await asyncio.sleep(10)
                 continue
 
-            await asyncio.sleep(10)  #TEMPO DE GRAVAÇÃO
+            await asyncio.sleep(10)  # TEMPO DE GRAVAÇÃO
 
             if self.gravando:
                 vc.stop_recording()
@@ -52,10 +50,21 @@ class Voice(commands.Cog, name="Comandos de Voz"):
             # Esperar o sink processar
             await asyncio.sleep(1)
 
-    async def once_done(self, sink: discord.sinks.WaveSink, ctx: discord.context, *args):
+    async def once_done(
+        self,
+        sink: discord.sinks.WaveSink,
+        ctx: discord.context,
+        *args,
+    ):
         for user_id, audio in sink.audio_data.items():
-            file_path = os.path.join(os.path.dirname(__file__), '..', '..', 'temp_audio', f'temp_{user_id}.wav')
-            
+            file_path = os.path.join(
+                os.path.dirname(__file__),
+                "..",
+                "..",
+                "temp_audio",
+                f"temp_{user_id}.wav",
+            )
+
             # Salvar o arquivo corretamente na pasta temp_audio
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             with open(file_path, "wb") as f:
@@ -77,8 +86,10 @@ class Voice(commands.Cog, name="Comandos de Voz"):
 
         await ctx.send("Gravação finalizada!")
 
-def setup(bot):
+
+def setup(bot: discord.Bot):
     print("Voice carregando")
-    bot.add_cog(Voice(bot))
+    obj = Voice(bot)
+    bot.add_cog(obj)
     print("Voice carregado")
-    return [Voice(bot)]
+    return [obj]
