@@ -5,6 +5,7 @@ import os
 import discord
 from discord.ext import commands
 from pydub import AudioSegment, silence
+from bot.voice.processing import reduce_noise
 from bot.voice.transcriber import transcribe_audio
 
 connections = {}
@@ -70,7 +71,8 @@ class Voice(commands.Cog, name="Comandos de Voz"):
         for user_id, audio in audio_data.items():
             audio_file: BytesIO = audio.file
 
-            texto = transcribe_audio(audio_file)
+            denoised = reduce_noise(audio_file, sink.vc.decoder.SAMPLING_RATE)
+            texto = transcribe_audio(denoised)
             await ctx.send(f"🎙️ Transcrição do <@{user_id}>: {texto}")
 
     @commands.command()
