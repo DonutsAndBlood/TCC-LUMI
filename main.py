@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+
 from bot.config import DISCORD_TOKEN
 
 intents = discord.Intents.default()
@@ -8,19 +9,21 @@ intents.members = True
 intents.voice_states = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
-cogs_loaded = False
+cogs = [
+    "bot.commands.geral",
+    "bot.commands.voice",
+    "bot.commands.tradutor",
+]
+
 
 @bot.event
 async def on_ready():
-    global cogs_loaded
-    if not cogs_loaded:
-        for cog in ["bot.commands.geral", "bot.commands.voice", "bot.commands.tradutor"]:
-            try:
-                await bot.load_extension(cog)
-                print(f"Loaded {cog}")
-            except Exception as e:
-                print(f"Failed to load {cog}: {e}")
-        cogs_loaded = True
+    try:
+        bot.load_extensions(*cogs)
+        print(f"Loaded all cogs")
+    except Exception as e:
+        print(f"Failed to load: {e}")
     print(f"Bot conectado como {bot.user}")
+
 
 bot.run(DISCORD_TOKEN)
