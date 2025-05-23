@@ -15,14 +15,17 @@ class Voice(commands.Cog, name="Comandos de Voz"):
         self.gravando = False
 
     @commands.command()
-    async def gravar(self, ctx):
+    async def gravar(self, ctx: discord.ApplicationContext):
+        if isinstance(ctx.author, discord.User):
+            return
+
         voice = ctx.author.voice
 
-        if not voice:
+        if voice is None or voice.channel is None:
             await ctx.send("Você não está em um canal de voz!")
             return
 
-        vc = await voice.channel.connect()
+        vc: discord.VoiceClient = await voice.channel.connect()
         connections.update({ctx.guild.id: vc})
 
         await ctx.send("Iniciando gravação contínua...")
@@ -30,7 +33,7 @@ class Voice(commands.Cog, name="Comandos de Voz"):
 
         await self.gravar_loop(ctx, vc)
 
-    async def gravar_loop(self, ctx, vc):
+    async def gravar_loop(self, ctx, vc: discord.VoiceClient):
         while self.gravando:
             sink = discord.sinks.WaveSink()
 
