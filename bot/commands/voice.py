@@ -1,11 +1,11 @@
 import asyncio
 from io import BytesIO
-import os
 
 import discord
 from discord.ext import commands
-from pydub import AudioSegment, silence
-from bot.voice.processing import reduce_noise
+from discord.voice_client import RecordingException  # type: ignore[attr-defined]
+
+from bot.voice.processing import load_audio_ndarray
 from bot.voice.transcriber import transcribe_audio
 
 connections = {}
@@ -37,12 +37,12 @@ class Voice(commands.Cog, name="Comandos de Voz"):
 
     async def gravar_loop(self, ctx, vc: discord.VoiceClient):
         while self.gravando:
-            sink = discord.sinks.WaveSink()
+            sink = discord.sinks.OGGSink()
 
             # Começar a gravar
             try:
                 vc.start_recording(sink, self.once_done, ctx)
-            except:
+            except RecordingException:
                 await ctx.send("Já está gravando")
                 await asyncio.sleep(10)
                 continue
@@ -57,9 +57,9 @@ class Voice(commands.Cog, name="Comandos de Voz"):
 
     async def once_done(
         self,
-        sink: discord.sinks.WaveSink,
+        sink: discord.sinks.OGGSink,
         ctx: discord.ApplicationContext,
-        *args,
+        *_args,
     ):
         if sink.vc is None or sink.vc.decoder is None:
             await ctx.send("Erro ao realizar transcrição.")
@@ -71,8 +71,10 @@ class Voice(commands.Cog, name="Comandos de Voz"):
         for user_id, audio in audio_data.items():
             audio_file: BytesIO = audio.file
 
-            denoised = reduce_noise(audio_file, sink.vc.decoder.SAMPLING_RATE)
-            texto = transcribe_audio(denoised)
+            # denoised = reduce_noise(audio_file)
+            print(audio.finished)
+            audio_array = load_audio_ndarray(audio_file)
+            texto = transcribe_audio(audio_array)
             await ctx.send(f"🎙️ Transcrição do <@{user_id}>: {texto}")
 
     @commands.command()
