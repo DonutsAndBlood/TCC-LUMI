@@ -1,5 +1,3 @@
 {
-	"python.analysis.extraPaths": [
-		"./src/tcc-lumi"
-	]
+	"pylint.cwd": "${workspaceFolder}/src/lumi-bot",
 }
