@@ -12,6 +12,7 @@ dependencies = [
     "openai-whisper >=20240930",
     "py-cord >=2.6.1",
     "pynacl >=1.5.0",
+    "websockets >=15.0.1",
 ]
 
 [project.optional-dependencies]
