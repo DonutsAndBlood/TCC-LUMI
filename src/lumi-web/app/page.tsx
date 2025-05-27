@@ -1,103 +1,79 @@
-import Image from "next/image";
+'use client';
+import { useEffect, useState } from 'react';
+import VLibras from 'vlibras-nextjs';
+import Image from 'next/image';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [messages, setMessages] = useState([
+    'Exemplo de tradução em tempo real',
+    'Esta é uma mensagem de teste.',
+    'Aprenda libras!',
+  ]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  //useEffect para clicar no botão de acesso do VLibras assim que abre a página
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const accessBtn = document.querySelector('[vw-access-button]');
+      if (accessBtn) {
+        (accessBtn as HTMLElement).click();
+        clearInterval(interval);
+      }
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  //eu não sei se isso ataliza o useState de mensagens
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:8765');//acho que o endereço é esse
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.message) {
+        setMessages((prev) => [...prev, data.message]);
+      }
+    };
+
+    return () => ws.close();
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-zinc-900 text-black dark:text-white flex flex-col items-center p-6 sm:p-10 gap-10">
+      <header className="flex flex-col items-center gap-4">
+        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg">
+          <Image
+            src="/bot-icon.png"
+            alt="Avatar do Bot"
+            width={128}
+            height={128}
+            className="object-cover w-full h-full"
+          />
         </div>
+
+        <h1 className="text-3xl sm:text-4xl font-bold text-center">
+          Lumi
+        </h1>
+        <p className="text-center max-w-2xl text-sm sm:text-base text-gray-600 dark:text-gray-300">
+          As mensagens de voz serão convertidas para texto e exibidas abaixo em
+          tempo real. O VLibras será responsável por traduzi-las automaticamente para Libras.
+        </p>
+      </header>
+
+      <main className="w-full max-w-3xl h-[400px] bg-gray-100 dark:bg-zinc-800 rounded-2xl shadow-inner p-4 overflow-y-auto flex flex-col gap-3">
+        {messages.map((msg, index) => (
+          <div
+            key={index}
+            className="bg-white dark:bg-zinc-700 text-sm p-3 rounded-lg shadow border border-gray-200 dark:border-zinc-600"
+          >
+            {msg}
+          </div>
+        ))}
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+
+      <footer className="text-xs text-gray-400 dark:text-gray-500 mt-auto">
+        Desenvolvido por Brayan Bautz e Henrique Klayton • Projeto com VLibras
       </footer>
+
+      <VLibras forceOnload />
     </div>
   );
 }
