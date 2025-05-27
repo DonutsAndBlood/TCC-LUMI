@@ -1,7 +1,15 @@
 import asyncio
 from io import BytesIO
+from typing import Any, Coroutine, Optional
 
 import discord
+from discord import (
+    ApplicationContext,
+    ButtonStyle,
+    Interaction,
+    TextChannel,
+    VoiceClient,
+)
 from discord.ext import commands
 from discord.voice_client import RecordingException  # type: ignore[attr-defined]
 
@@ -15,9 +23,11 @@ class Voice(commands.Cog, name="Comandos de Voz"):
     def __init__(self, bot):
         self.bot = bot
         self.gravando = False
+        self.pausado = False
+        self.view: VoiceControlView
 
     @commands.command()
-    async def gravar(self, ctx: discord.ApplicationContext):
+    async def gravar(self, ctx: ApplicationContext):
         if isinstance(ctx.author, discord.User):
             return
 
@@ -30,12 +40,26 @@ class Voice(commands.Cog, name="Comandos de Voz"):
         vc: discord.VoiceClient = await voice.channel.connect()
         connections.update({ctx.guild.id: vc})
 
-        await ctx.send("Iniciando gravação contínua...")
-        self.gravando = True
+        # (fetch criar sessão) return:id para concatenar no link
 
-        await self.gravar_loop(ctx, vc)
+        embed = discord.Embed(
+            title="🎙️ Tradução de voz em libras",
+            description=(
+                "**Como funciona:**\n"
+                "O bot irá transcrever o áudio do canal de voz em tempo real.\n"
+                "As transcrições serão enviadas no link a seguir 10 segundos:\n\n"
+                "https:teste.com.br\n\n"
+                "- ▶️ Inicia a gravação.\n"
+                # "- ⏸️ Pausa a gravação.\n"
+                "- ⏹️ Desconecta da chamada.\n\n"
+            ),
+            color=discord.Color.blue(),
+        )
 
-    async def gravar_loop(self, ctx, vc: discord.VoiceClient):
+        self.view = VoiceControlView(self, ctx, vc)
+        await ctx.send(embed=embed, view=self.view)
+
+    async def gravar_loop(self, ctx, vc: VoiceClient):
         while self.gravando:
             sink = discord.sinks.OGGSink()
 
@@ -44,13 +68,10 @@ class Voice(commands.Cog, name="Comandos de Voz"):
                 vc.start_recording(sink, self.once_done, ctx)
             except RecordingException:
                 await ctx.send("Já está gravando")
-                await asyncio.sleep(10)
-                continue
+                return
 
             await asyncio.sleep(10)  # TEMPO DE GRAVAÇÃO
-
-            if self.gravando:
-                vc.stop_recording()
+            vc.stop_recording()
 
             # Esperar o sink processar
             await asyncio.sleep(1)
@@ -58,7 +79,7 @@ class Voice(commands.Cog, name="Comandos de Voz"):
     async def once_done(
         self,
         sink: discord.sinks.OGGSink,
-        ctx: discord.ApplicationContext,
+        ctx: ApplicationContext,
         *_args,
     ):
         if sink.vc is None or sink.vc.decoder is None:
@@ -97,3 +118,55 @@ def setup(bot: discord.Bot):
     bot.add_cog(obj)
     print("Voice carregado")
     return [obj]
+
+
+class VoiceControlView(discord.ui.View):
+    def __init__(self, cog, ctx: discord.ApplicationContext, vc: discord.VoiceClient):
+        super().__init__(timeout=None)
+        self.cog = cog
+        self.ctx = ctx
+        self.vc = vc
+        self.loop_task = None
+
+    @discord.ui.button(label="▶️ Iniciar", style=discord.ButtonStyle.success)
+    async def start(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if not self.cog.gravando:
+            self.cog.gravando = True
+            self.cog.pausado = False
+            await interaction.response.send_message(
+                "🟢 Iniciando gravação...", ephemeral=True
+            )
+            self.loop_task = asyncio.create_task(
+                self.cog.gravar_loop(self.ctx, self.vc)
+            )
+        else:
+            self.cog.pausado = False
+            await interaction.response.send_message(
+                "⏯️ Gravação retomada!", ephemeral=True
+            )
+
+    @discord.ui.button(label="⏸️ Pausar", style=discord.ButtonStyle.primary)
+    async def pause(self, button: discord.ui.Button, interaction: discord.Interaction):
+        if self.cog.gravando:
+            self.cog.pausado = True
+            await interaction.response.send_message(
+                "⏸️ Gravação pausada!", ephemeral=True
+            )
+        else:
+            await interaction.response.send_message(
+                "⚠️ Gravação não está ativa.", ephemeral=True
+            )
+
+    @discord.ui.button(label="⏹️ Parar", style=discord.ButtonStyle.danger)
+    async def stop(self, button: discord.ui.Button, interaction: discord.Interaction):
+        self.cog.gravando = False
+        self.cog.pausado = False
+        if self.ctx.guild.id in connections:
+            vc = connections[self.ctx.guild.id]
+            vc.stop_recording()
+            await vc.disconnect()
+            del connections[self.ctx.guild.id]
+        await interaction.response.send_message(
+            "🔴 Gravação encerrada!", ephemeral=True
+        )
+        self.stop()
