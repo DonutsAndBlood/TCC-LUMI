@@ -1,5 +1,6 @@
 {
 	"pylint.cwd": "${workspaceFolder}/src/lumi-bot",
+	"mypy-type-checker.cwd": "${workspaceFolder}/src/lumi-bot",
 	"mypy-type-checker.args": [
 		"--follow-imports=normal",
 		"--ignore-missing-imports",
