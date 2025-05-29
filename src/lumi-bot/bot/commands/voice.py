@@ -121,52 +121,87 @@ def setup(bot: discord.Bot):
 
 
 class VoiceControlView(discord.ui.View):
-    def __init__(self, cog, ctx: discord.ApplicationContext, vc: discord.VoiceClient):
+
+    def __init__(
+        self,
+        cog: Voice,
+        ctx: ApplicationContext,
+        vc: VoiceClient,
+    ):
         super().__init__(timeout=None)
         self.cog = cog
         self.ctx = ctx
         self.vc = vc
-        self.loop_task = None
+        self.loop_coro: Optional[Coroutine[Any, Any, Any]] = None
 
-    @discord.ui.button(label="▶️ Iniciar", style=discord.ButtonStyle.success)
-    async def start(self, button: discord.ui.Button, interaction: discord.Interaction):
+    @discord.ui.button(label="▶️ Iniciar", style=ButtonStyle.success)
+    async def start(
+        self,
+        _button: discord.ui.Button[Any],
+        interaction: Interaction,
+    ):
         if not self.cog.gravando:
             self.cog.gravando = True
             self.cog.pausado = False
-            await interaction.response.send_message(
-                "🟢 Iniciando gravação...", ephemeral=True
+            await self.send_response(
+                interaction,
+                "🟢 Iniciando gravação...",
             )
-            self.loop_task = asyncio.create_task(
-                self.cog.gravar_loop(self.ctx, self.vc)
-            )
+            self.loop_coro = self.cog.gravar_loop(self.ctx, self.vc)
+            await self.loop_coro
         else:
             self.cog.pausado = False
-            await interaction.response.send_message(
-                "⏯️ Gravação retomada!", ephemeral=True
+            await self.send_response(
+                interaction,
+                "⏯️ Gravação retomada!",
             )
 
-    @discord.ui.button(label="⏸️ Pausar", style=discord.ButtonStyle.primary)
-    async def pause(self, button: discord.ui.Button, interaction: discord.Interaction):
-        if self.cog.gravando:
-            self.cog.pausado = True
-            await interaction.response.send_message(
-                "⏸️ Gravação pausada!", ephemeral=True
-            )
-        else:
-            await interaction.response.send_message(
-                "⚠️ Gravação não está ativa.", ephemeral=True
-            )
+    # @discord.ui.button(label="⏸️ Pausar", style=ButtonStyle.primary)
+    # async def pause(
+    #     self,
+    #     _button: discord.ui.Button[Any],
+    #     interaction: Interaction,
+    # ):
+    #     if self.cog.gravando:
+    #         self.cog.gravando = False
+    #         self.cog.pausado = True
+    #         if self.loop_coro is not None:
+    #             await self.loop_coro
+    #         await self.send_response(
+    #             interaction,
+    #             "⏸️ Gravação pausada!",
+    #         )
+    #     else:
+    #         await self.send_response(
+    #             interaction,
+    #             "⚠️ Gravação não está ativa.",
+    #         )
 
-    @discord.ui.button(label="⏹️ Parar", style=discord.ButtonStyle.danger)
-    async def stop(self, button: discord.ui.Button, interaction: discord.Interaction):
+    @discord.ui.button(label="⏹️ Parar", style=ButtonStyle.danger)
+    async def stop(  # type: ignore[override] # pylint: disable=W0236
+        self,
+        _button: discord.ui.Button[Any],
+        interaction: Interaction,
+    ):
         self.cog.gravando = False
         self.cog.pausado = False
         if self.ctx.guild.id in connections:
             vc = connections[self.ctx.guild.id]
             vc.stop_recording()
-            await vc.disconnect()
             del connections[self.ctx.guild.id]
-        await interaction.response.send_message(
-            "🔴 Gravação encerrada!", ephemeral=True
+            await vc.disconnect()
+            if interaction.message is not None:
+                await interaction.message.delete()
+        await self.send_response(
+            interaction,
+            "🔴 Gravação encerrada!",
         )
-        self.stop()
+
+    async def send_response(self, interaction: Interaction, message: str):
+        channel: Optional[TextChannel] = interaction.channel
+        if channel is not None:
+            vc_members = channel.members
+            mentions_str = " ".join(
+                [member.mention for member in vc_members if not member.bot]
+            )
+            await interaction.response.send_message(f"{message}\n{mentions_str}")
