@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "../src/lumi-bot"
-		}
+		},
+		{
+			"path": "../src/lumi-web"
+		},
 	]
 }
