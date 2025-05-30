@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aiohttp >=3.12.0",
     "dotenv >=0.9.9",
     "librosa >=0.11.0",
     "noisereduce >=3.0.3",
@@ -12,7 +13,7 @@ dependencies = [
     "openai-whisper >=20240930",
     "py-cord >=2.6.1",
     "pynacl >=1.5.0",
-    "websockets >=15.0.1",
+    "python-socketio >=5.13.0",
 ]
 
 [project.optional-dependencies]
@@ -48,7 +49,7 @@ pytorch-triton-rocm = [
 extra = ["rocm"]
 
 [dependency-groups]
-dev = ["ipykernel>=6.29.5", "mypy>=1.15.0", "pylint>=3.3.7"]
+dev = ["black>=25.1.0", "ipykernel>=6.29.5", "mypy>=1.15.0", "pylint>=3.3.7"]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
