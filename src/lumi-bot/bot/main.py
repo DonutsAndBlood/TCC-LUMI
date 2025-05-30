@@ -13,17 +13,13 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 cogs = [
     "bot.commands.geral",
     "bot.commands.voice",
-    "bot.commands.tradutor",
 ]
 
 
 @bot.event
 async def on_ready():
-    try:
-        bot.load_extensions(*cogs)
-        print("Loaded all cogs")
-    except Exception as e:
-        print(f"Failed to load: {e}")
+    bot.load_extensions(*cogs)
+    print("Loaded all cogs")
     print(f"Bot conectado como {bot.user}")
 
 
