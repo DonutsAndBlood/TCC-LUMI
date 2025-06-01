@@ -1,0 +1,41 @@
+{
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.unusedImports": "always",
+		"source.organizeImports": "always",
+	},
+
+	// Pylint
+	"pylint.enabled": true,
+	"pylint.cwd": "${workspaceFolder}",
+	"pylint.args": [
+		"--disable=E0602,W0221", // Conflicts with mypy (undefined-variable, arguments-differ)
+		"--logging-format-style=new",
+	],
+
+	// Mypy
+	"mypy-type-checker.cwd": "${workspaceFolder}",
+	"mypy-type-checker.args": [
+		"--follow-imports=normal",
+		"--ignore-missing-imports",
+		"--warn-unused-configs",
+		"--disallow-any-generics",
+		"--disallow-subclassing-any",
+		// "--disallow-untyped-calls",
+		// "--disallow-untyped-defs",
+		// "--disallow-incomplete-defs",
+		"--check-untyped-defs",
+		"--disallow-untyped-decorators",
+		"--warn-redundant-casts",
+		"--warn-unused-ignores",
+		"--warn-return-any",
+		"--no-implicit-reexport",
+		"--strict-equality",
+		"--extra-checks",
+		"--explicit-package-bases",
+		// "--disable-error-code E0602" // Conflicts with pylint (Undefined variable)
+	],
+
+	// Black
+	"black-formatter.cwd": "${workspaceFolder}",
+}

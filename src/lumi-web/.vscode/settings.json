@@ -1,0 +1,11 @@
+{
+	"biome.enabled": true,
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.removeUnusedImports": "always",
+		"source.addMissingImports.ts": "always",
+		"source.organizeImports.biome": "always"
+	},
+
+	"typescript.format.semicolons": "insert",
+}

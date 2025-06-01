@@ -9,5 +9,13 @@
 		{
 			"path": "../src/lumi-web"
 		},
-	]
+	],
+	"settings": {
+		"editor.insertSpaces": false,
+		"editor.tabSize": 2,
+		"files.eol": "\n",
+
+		"biome.enabled": false,
+		"editor.formatOnSave": true,
+	}
 }
