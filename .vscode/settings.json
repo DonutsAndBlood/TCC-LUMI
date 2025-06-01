@@ -1,7 +1,45 @@
 {
+	"editor.insertSpaces": false,
+	"editor.tabSize": 2,
+	"files.eol": "\n",
+
+	"[javascript]": {
+		"editor.codeActionsOnSave": {
+			"source.removeUnusedImports": "always",
+			"source.addMissingImports.ts": "always",
+			"source.organizeImports.biome": "always"
+		},
+	},
+	"[typescriptreact]": {
+		"editor.codeActionsOnSave": {
+			"source.removeUnusedImports": "always",
+			"source.addMissingImports.ts": "always",
+			"source.organizeImports.biome": "always"
+		},
+	},
+	"[typescript]": {
+		"editor.codeActionsOnSave": {
+			"source.removeUnusedImports": "always",
+			"source.addMissingImports.ts": "always",
+			"source.organizeImports.biome": "always"
+		},
+	},
+	"editor.codeActionsOnSave": {
+		"source.unusedImports": "always",
+		"source.organizeImports": "always",
+	},
+
+	"typescript.format.semicolons": "insert",
+
+	// Pylint
+	"pylint.enabled": true,
 	"pylint.cwd": "${workspaceFolder}/src/lumi-bot",
+	"pylint.args": [
+		"--disable=E0602,W0221" // Conflicts with mypy (undefined-variable, arguments-differ)
+	],
+
+	// Mypy
 	"mypy-type-checker.cwd": "${workspaceFolder}/src/lumi-bot",
-	"black-formatter.cwd": "${workspaceFolder}/src/lumi-bot",
 	"mypy-type-checker.args": [
 		"--follow-imports=normal",
 		"--ignore-missing-imports",
@@ -22,8 +60,7 @@
 		"--explicit-package-bases",
 		// "--disable-error-code E0602" // Conflicts with pylint (Undefined variable)
 	],
-	"pylint.enabled": true,
-	"pylint.args": [
-		"--disable=E0602,W0221" // Conflicts with mypy (undefined-variable, arguments-differ)
-	],
+
+	// Black
+	"black-formatter.cwd": "${workspaceFolder}/src/lumi-bot",
 }
