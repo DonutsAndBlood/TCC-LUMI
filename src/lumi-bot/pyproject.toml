@@ -5,16 +5,15 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "aiohttp >=3.12.0",
+    "aiohttp>=3.12.0",
     "aiohttp-cors>=0.8.1",
-    "dotenv >=0.9.9",
-    "librosa >=0.11.0",
-    "noisereduce >=3.0.3",
-    "numpy >=2.2.6",
-    "openai-whisper >=20240930",
-    "py-cord >=2.6.1",
-    "pynacl >=1.5.0",
-    "python-socketio >=5.13.0",
+    "dotenv>=0.9.9",
+    "librosa>=0.11.0",
+    "noisereduce>=3.0.3",
+    "numpy>=2.2.6",
+    "openai-whisper>=20240930",
+    "py-cord[speed,voice]>=2.6.1",
+    "python-socketio>=5.13.0",
 ]
 
 [project.optional-dependencies]
@@ -45,6 +44,7 @@ torchaudio = [
 pytorch-triton-rocm = [
     { index = "pytorch-rocm", marker = "sys_platform == 'linux'" },
 ]
+py-cord = { git = "https://github.com/Pycord-Development/pycord", branch = "master" }
 
 [tool.uv.pip]
 extra = ["rocm"]

@@ -1,8 +1,9 @@
+import asyncio
+
 import discord
 from discord.ext import commands
 
 from config import DISCORD_TOKEN
-from .whisper import Model
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -23,6 +24,14 @@ async def on_ready():
     print(f"Bot conectado como {bot.user}")
 
 
-def start_bot():
-    Model.load_model()
+def run_bot():
+    if DISCORD_TOKEN is None:
+        raise ValueError("DISCORD_TOKEN is not set in the environment variables.")
     bot.run(DISCORD_TOKEN)
+
+
+async def start_bot(socketio_loop: asyncio.AbstractEventLoop) -> None:
+    if DISCORD_TOKEN is None:
+        raise ValueError("DISCORD_TOKEN is not set in the environment variables.")
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, run_bot)

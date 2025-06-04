@@ -1,6 +1,7 @@
 import asyncio
+import logging
 from io import BytesIO
-from typing import Any, Coroutine, Optional
+from typing import Any, Coroutine, Dict, Optional
 
 import discord
 from discord import (
@@ -13,18 +14,22 @@ from discord import (
 from discord.ext import commands
 from discord.voice_client import RecordingException  # type: ignore[attr-defined]
 
+import websocket
 from bot.voice.processing import load_audio_ndarray
 from bot.voice.transcriber import transcribe_audio
 
-connections = {}
-
 
 class Voice(commands.Cog, name="Comandos de Voz"):
-    def __init__(self, bot):
+    bot: discord.Bot
+    recording_running: bool
+    recording_paused: bool
+    connections: Dict[int, VoiceClient]
+
+    def __init__(self, bot: discord.Bot):
         self.bot = bot
-        self.gravando = False
-        self.pausado = False
+        self.recording_running = False
         self.view: VoiceControlView
+        self.connections = {}
 
     @commands.command()
     async def gravar(self, ctx: ApplicationContext):
@@ -38,7 +43,7 @@ class Voice(commands.Cog, name="Comandos de Voz"):
             return
 
         vc: discord.VoiceClient = await voice.channel.connect()
-        connections.update({ctx.guild.id: vc})
+        self.connections.update({ctx.guild.id: vc})
 
         # (fetch criar sessão) return:id para concatenar no link
 
@@ -59,8 +64,10 @@ class Voice(commands.Cog, name="Comandos de Voz"):
         self.view = VoiceControlView(self, ctx, vc)
         await ctx.send(embed=embed, view=self.view)
 
-    async def gravar_loop(self, ctx, vc: VoiceClient):
-        while self.gravando:
+    async def start_recording_loop(self, ctx, vc: VoiceClient):
+        self.recording_running = True
+
+        while self.recording_running:
             sink = discord.sinks.OGGSink()
 
             # Começar a gravar
@@ -71,7 +78,8 @@ class Voice(commands.Cog, name="Comandos de Voz"):
                 return
 
             await asyncio.sleep(10)  # TEMPO DE GRAVAÇÃO
-            vc.stop_recording()
+            if vc.recording:
+                vc.stop_recording()
 
             # Esperar o sink processar
             await asyncio.sleep(1)
@@ -85,38 +93,48 @@ class Voice(commands.Cog, name="Comandos de Voz"):
         if sink.vc is None or sink.vc.decoder is None:
             await ctx.send("Erro ao realizar transcrição.")
             print("Erro ao trancrever áudio: 'sink.vc.decoder' não encontrado")
-            self.gravando = False
+            self.recording_running = False
             return
 
         audio_data: dict[int, discord.sinks.AudioData] = sink.audio_data
         for user_id, audio in audio_data.items():
             audio_file: BytesIO = audio.file
 
-            # denoised = reduce_noise(audio_file)
-            print(audio.finished)
-            audio_array = load_audio_ndarray(audio_file)
-            texto = transcribe_audio(audio_array)
-            await ctx.send(f"🎙️ Transcrição do <@{user_id}>: {texto}")
+            try:
+                # denoised = reduce_noise(audio_file)
+                print(audio.finished)
+                audio_array = load_audio_ndarray(audio_file)
+                texto = transcribe_audio(audio_array)
+                await websocket.send_transcript(texto)
+                await ctx.send(f"🎙️ Transcrição do <@{user_id}>: {texto}")
+            except Exception:  # pylint: disable=W0718
+                logging.critical(
+                    "Erro durante transcrição ou envio da mensagem",
+                    exc_info=True,
+                )
 
-    @commands.command()
-    async def parar(self, ctx):
-        self.gravando = False
+    async def stop_recording(self, ctx):
+        self.recording_running = False
 
         # Verificar se está gravando antes de tentar parar
-        if ctx.guild.id in connections:
-            vc = connections[ctx.guild.id]
-            vc.stop_recording()
+        if ctx.guild.id in self.connections:
+            vc = self.connections[ctx.guild.id]
+            if vc.recording:
+                try:
+                    vc.stop_recording()
+                except RecordingException:
+                    pass
+
             await vc.disconnect()
-            del connections[ctx.guild.id]
+            self.connections.pop(ctx.guild.id)
 
         await ctx.send("Gravação finalizada!")
 
 
 def setup(bot: discord.Bot):
-    print("Voice carregando")
     obj = Voice(bot)
     bot.add_cog(obj)
-    print("Voice carregado")
+    print("Voice loaded")
     return [obj]
 
 
@@ -140,17 +158,15 @@ class VoiceControlView(discord.ui.View):
         _button: discord.ui.Button[Any],
         interaction: Interaction,
     ):
-        if not self.cog.gravando:
-            self.cog.gravando = True
-            self.cog.pausado = False
+        if not self.cog.recording_running:
             await self.send_response(
                 interaction,
                 "🟢 Iniciando gravação...",
             )
-            self.loop_coro = self.cog.gravar_loop(self.ctx, self.vc)
+            self.loop_coro = self.cog.start_recording_loop(self.ctx, self.vc)
             await self.loop_coro
         else:
-            self.cog.pausado = False
+            self.cog.recording_paused = False
             await self.send_response(
                 interaction,
                 "⏯️ Gravação retomada!",
@@ -183,15 +199,13 @@ class VoiceControlView(discord.ui.View):
         _button: discord.ui.Button[Any],
         interaction: Interaction,
     ):
-        self.cog.gravando = False
-        self.cog.pausado = False
-        if self.ctx.guild.id in connections:
-            vc = connections[self.ctx.guild.id]
-            vc.stop_recording()
-            del connections[self.ctx.guild.id]
-            await vc.disconnect()
-            if interaction.message is not None:
-                await interaction.message.delete()
+        self.cog.recording_running = False
+        self.cog.recording_paused = False
+
+        # Verificar se está gravando antes de tentar parar
+        self.cog.stop_recording(self.ctx)
+        if interaction.message is not None:
+            await interaction.message.delete()
         await self.send_response(
             interaction,
             "🔴 Gravação encerrada!",
@@ -205,3 +219,6 @@ class VoiceControlView(discord.ui.View):
                 [member.mention for member in vc_members if not member.bot]
             )
             await interaction.response.send_message(f"{message}\n{mentions_str}")
+
+    def create_access_url(self, user_id: int) -> str:
+        return f"http://lumi.myddns.me/{user_id}"

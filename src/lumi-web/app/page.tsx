@@ -1,14 +1,19 @@
 'use client';
+
+import { websocket } from '@/socketio';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import VLibras from 'vlibras-nextjs';
-import Image from 'next/image';
 
 export default function Home() {
   const [messages, setMessages] = useState([
-    'Exemplo de tradução em tempo real',
-    'Esta é uma mensagem de teste.',
-    'Aprenda libras!',
+    {id: 0, text: 'Exemplo de tradução em tempo real'},
+    {id: 1, text: 'Esta é uma mensagem de teste.'},
   ]);
+  const [isVLibrasReady, setIsVLibrasReady] = useState(false);
+  const [currentMessage, setCurrentMessage] = useState(messages[0].id);
+  const textContainerSize = 400;
+  const maxMessages = 7;
 
   //useEffect para clicar no botão de acesso do VLibras assim que abre a página
   useEffect(() => {
@@ -22,19 +27,32 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  //eu não sei se isso ataliza o useState de mensagens
+  // document.addEventListener('vlibras-ready', () => {
+
   useEffect(() => {
-    const ws = new WebSocket('ws://localhost:8765');//acho que o endereço é esse
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.message) {
-        setMessages((prev) => [...prev, data.message]);
+    websocket.on("transcript",(message: string) => {
+      console.log("message", message);
+      if (message && message.length > 0) {
+        setMessages((prev) => {
+          const lastId = prev[prev.length - 1]?.id ?? 0;
+          return [...prev, { id: lastId + 1, text: message }]
+					// return prev
+					// 	.toSpliced(0, 0, { id: lastId + 1, text: message })
+					// 	.slice(0, maxMessages);
+        });
       }
-    };
-
-    return () => ws.close();
+    });
   }, []);
+
+  // useEffect(() => {
+  //   if (!isVLibrasReady || messages.length === 0) return;
+
+  //   if (currentMessage !== messages[messages.length - 1].id) {
+  //     const nextMessage = messages[currentMessage + 1];
+  //     setCurrentMessage(nextMessage.id);
+  //     document.getElementById(`message-${currentMessage}`)?.click();
+  //   }
+	// 	}, [isVLibrasReady, messages, currentMessage]);
 
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-900 text-black dark:text-white flex flex-col items-center p-6 sm:p-10 gap-10">
@@ -58,13 +76,14 @@ export default function Home() {
         </p>
       </header>
 
-      <main className="w-full max-w-3xl h-[400px] bg-gray-100 dark:bg-zinc-800 rounded-2xl shadow-inner p-4 overflow-y-auto flex flex-col gap-3">
-        {messages.map((msg, index) => (
+      <main className={`w-full max-w-3xl h-[${textContainerSize}] bg-gray-100 dark:bg-zinc-800 rounded-2xl shadow-inner p-4 overflow-y-auto flex flex-col gap-3`}>
+        {messages.map((message) => (
           <div
-            key={index}
+            id={`message-${message.id}`}
+            key={message.id}
             className="bg-white dark:bg-zinc-700 text-sm p-3 rounded-lg shadow border border-gray-200 dark:border-zinc-600"
           >
-            {msg}
+            {message.text}
           </div>
         ))}
       </main>

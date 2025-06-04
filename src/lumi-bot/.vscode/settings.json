@@ -1,7 +1,7 @@
 {
 	"editor.formatOnSave": true,
 	"editor.codeActionsOnSave": {
-		"source.unusedImports": "always",
+		// "source.unusedImports": "always",
 		"source.organizeImports": "always",
 	},
 
@@ -10,7 +10,7 @@
 	"pylint.cwd": "${workspaceFolder}",
 	"pylint.args": [
 		"--disable=E0602,W0221", // Conflicts with mypy (undefined-variable, arguments-differ)
-		"--logging-format-style=new",
+		// "--logging-format-style=new",
 	],
 
 	// Mypy

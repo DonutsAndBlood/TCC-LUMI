@@ -1,7 +1,8 @@
-from discord.ext import commands
 import discord
+from discord.ext import commands
 
-class Geral(commands.Cog, name="Comandos Gerais"):  # Categoriza o Cog como "Comandos Gerais"
+
+class Geral(commands.Cog, name="Comandos Gerais"):
     def __init__(self, bot):
         self.bot = bot
 
@@ -18,11 +19,15 @@ class Geral(commands.Cog, name="Comandos Gerais"):  # Categoriza o Cog como "Com
         embed = discord.Embed(
             title="Comandos Disponíveis",
             description="Aqui estão os comandos básicos do bot:",
-            color=discord.Color.blue()
+            color=discord.Color.blue(),
         )
         embed.add_field(name="!oi", value="Receba uma saudação do bot", inline=False)
         embed.add_field(name="!ping", value="Veja a latência do bot", inline=False)
-        embed.add_field(name="!ajuda", value="Mostra essa mensagem de ajuda", inline=False)
+        embed.add_field(
+            name="!ajuda",
+            value="Mostra essa mensagem de ajuda",
+            inline=False,
+        )
 
         await ctx.send(embed=embed)
 
@@ -31,8 +36,8 @@ class Geral(commands.Cog, name="Comandos Gerais"):  # Categoriza o Cog como "Com
         await ctx.send("Indo dormir... 😴")
         await self.bot.close()
 
+
 def setup(bot):
-    print("Geral carregando")
     bot.add_cog(Geral(bot))
-    print("Geral carregado")
+    print("Geral loaded")
     return [Geral(bot)]
