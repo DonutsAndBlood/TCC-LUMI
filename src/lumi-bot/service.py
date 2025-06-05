@@ -9,7 +9,6 @@ class Service:
     """A class representing an asynchronous service that can be started and managed."""
 
     name: str
-    started: bool
     running: bool
     task: Task[Awaitable[Any]] | None
     func: Callable[[], Awaitable[Any]]
@@ -21,7 +20,6 @@ class Service:
         :param func: A callable that returns an Awaitable (e.g., an async function).
         """
         self.name = name or func.__name__
-        self.started = False
         self.running = False
         self.task = None
         self.func = func
@@ -61,7 +59,7 @@ class ServicesHandler:
             print(f"Service with key {service_id} not found.")
             return None
 
-        if service.started:
+        if service.running:
             print(f"Service {service} is already running.")
             return service.task
 
@@ -72,7 +70,7 @@ class ServicesHandler:
         """Run all services in the handler."""
         async with asyncio.TaskGroup() as tg:
             for service in self.services.values():
-                if not service.started:
+                if not service.running:
                     self.__create_grouped_task(service, tg)
             logging.info("All services are now running.")
         del tg
@@ -105,7 +103,6 @@ class ServicesHandler:
 
     def __mark_service_started(self, service: Service, task: Task[Any]) -> None:
         """Mark a service as started."""
-        service.started = True
         service.running = True
         service.task = task
         self.running_count += 1
