@@ -30,7 +30,7 @@ def run_bot():
     bot.run(DISCORD_TOKEN)
 
 
-async def start_bot(socketio_loop: asyncio.AbstractEventLoop) -> None:
+async def start_bot() -> None:
     if DISCORD_TOKEN is None:
         raise ValueError("DISCORD_TOKEN is not set in the environment variables.")
     loop = asyncio.get_event_loop()

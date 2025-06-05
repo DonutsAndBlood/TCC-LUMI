@@ -1,8 +1,9 @@
 import asyncio
 import functools
 import logging
-from asyncio import Task, TaskGroup
-from typing import Any, Awaitable, Callable, Dict
+from asyncio import AbstractEventLoop, Task, TaskGroup
+from contextvars import Context
+from typing import Any, Awaitable, Callable, Dict, List
 
 
 class Service:
@@ -12,8 +13,17 @@ class Service:
     running: bool
     task: Task[Awaitable[Any]] | None
     func: Callable[[], Awaitable[Any]]
+    context: Context
+    loops: List[AbstractEventLoop]
 
-    def __init__(self, func: Callable[[], Awaitable[Any]], name: str | None = None):
+    def __init__(
+        self,
+        func: Callable[[], Awaitable[Any]],
+        /,
+        context: Context | None = None,
+        name: str | None = None,
+        loops: List[AbstractEventLoop] | None = None,
+    ):
         """
         Initialize the Service with a function to run.
 
@@ -23,6 +33,8 @@ class Service:
         self.running = False
         self.task = None
         self.func = func
+        self.context = context or Context()
+        self.loops = loops or []
 
     async def __call__(self) -> Any:
         return await self.func()
