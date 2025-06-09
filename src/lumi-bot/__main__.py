@@ -1,5 +1,4 @@
 import asyncio
-import logging
 
 import config
 from service import Service, ServicesHandler
@@ -33,12 +32,6 @@ if __name__ == "__main__":
         await handler.run_all_services()
 
     config.load_variables()
-    debug_mode = config.is_dev()
-    if debug_mode:
-        asyncio.get_event_loop().set_debug(True)
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
     # Model.load_model()
 
     # asyncio.run(start(), debug=debug_mode)

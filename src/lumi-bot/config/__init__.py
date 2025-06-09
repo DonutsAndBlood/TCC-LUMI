@@ -23,6 +23,15 @@ class Defaults(StrEnum):
     ENV = "production"
 
 
+def initialize_logger():
+    debug_mode = is_dev()
+    if debug_mode:
+        asyncio.get_event_loop().set_debug(True)
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+
+
 def load_variables():
     """Loads the environment variables from an .env file."""
     env_path = find_dotenv()
@@ -32,6 +41,7 @@ def load_variables():
         )
 
     load_dotenv(dotenv_path=env_path)
+    initialize_logger()
     variables_debug(env_path)
 
 
