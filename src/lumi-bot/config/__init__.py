@@ -35,7 +35,7 @@ def initialize_logger():
 def load_variables():
     """Loads the environment variables from an .env file."""
     env_path = find_dotenv()
-    if not env_path:
+    if len(env_path) == 0:
         raise FileNotFoundError(
             "No .env file found. Please create a .env file with the required environment variables."
         )
@@ -48,7 +48,7 @@ def load_variables():
 def get(key: Key) -> str:
     """Returns the value of an environment variable."""
     value = os.getenv(key, Defaults[key.value])
-    if value is None or len(value) == 0:
+    if len(value) == 0:
         raise ValueError(f"No value set for variable {key}")
     return value
 
