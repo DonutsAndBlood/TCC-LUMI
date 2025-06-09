@@ -14,9 +14,9 @@ from discord import (
 from discord.ext import commands
 from discord.voice_client import RecordingException  # type: ignore[attr-defined]
 
-import websocket
 from bot.voice.processing import load_audio_ndarray
 from bot.voice.transcriber import transcribe_audio
+from websocket import transcript
 
 
 class Voice(commands.Cog, name="Comandos de Voz"):
@@ -105,7 +105,7 @@ class Voice(commands.Cog, name="Comandos de Voz"):
                 print(audio.finished)
                 audio_array = load_audio_ndarray(audio_file)
                 texto = transcribe_audio(audio_array)
-                await websocket.send_transcript(texto)
+                transcript.queue.put(texto)
                 await ctx.send(f"🎙️ Transcrição do <@{user_id}>: {texto}")
             except Exception:  # pylint: disable=W0718
                 logging.critical(
