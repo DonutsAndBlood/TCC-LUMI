@@ -3,7 +3,8 @@ import asyncio
 import discord
 from discord.ext import commands
 
-from config import DISCORD_TOKEN
+import config
+from config import Key
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -25,13 +26,13 @@ async def on_ready():
 
 
 def run_bot():
-    if DISCORD_TOKEN is None:
+    if config.get(Key.DISCORD_TOKEN) is None:
         raise ValueError("DISCORD_TOKEN is not set in the environment variables.")
-    bot.run(DISCORD_TOKEN)
+    bot.run(config.get(Key.DISCORD_TOKEN))
 
 
 async def start_bot() -> None:
-    if DISCORD_TOKEN is None:
+    if config.get(Key.DISCORD_TOKEN) is None:
         raise ValueError("DISCORD_TOKEN is not set in the environment variables.")
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, run_bot)
