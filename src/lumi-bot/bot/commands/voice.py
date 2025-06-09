@@ -42,6 +42,11 @@ class Voice(commands.Cog, name="Comandos de Voz"):
             await ctx.send("Você não está em um canal de voz!")
             return
 
+        if ctx.guild is None:
+            await ctx.send("Erro ao conectar ao canal de voz!")
+            logging.error("Guild not found while trying to connect to the voice chat.")
+            return
+
         vc: discord.VoiceClient = await voice.channel.connect()
         self.connections.update({ctx.guild.id: vc})
 
