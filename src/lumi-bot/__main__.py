@@ -9,11 +9,12 @@ from websocket import process_transcripts
 
 
 async def monitor_loop():
+    """Prints a message whenever the event loop has been blocked for more than a second."""
     while True:
         start_time = asyncio.get_running_loop().time()
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
         delta_time = asyncio.get_running_loop().time() - start_time
-        if delta_time > 1.2:
+        if delta_time >= 1:
             print(f"[Loop blocked for {delta_time:.2f}s]")
 
 
@@ -35,7 +36,10 @@ if __name__ == "__main__":
                 name="Transcripts Queue Consumer",
             )
         )
-        handler.add_service(Service(monitor_loop))
+
+        if config.is_debug():
+            handler.add_service(Service(monitor_loop))
+
         await handler.run_all_services()
 
     config.load_variables()
