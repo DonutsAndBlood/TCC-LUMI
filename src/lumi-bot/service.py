@@ -63,6 +63,20 @@ class ServicesHandler:
         self.services[key] = service
         return key
 
+    def add_services(self, services: List[Service]) -> List[int]:
+        """
+        Add multiple services to the handler. \\
+        Returns a unique key for the service.
+
+        :param service: The Service instance to add.
+        :return int: A unique key (id) for the service.
+        """
+        for service in services:
+            key = id(service)
+            self.services[key] = service
+
+        return [id(service) for service in services]
+
     def run_service(self, service_id: int) -> Task[Any] | None:
         """Run a service from the handler."""
         service = self.services.get(service_id)
