@@ -18,32 +18,31 @@ async def monitor_loop():
             print(f"[Loop blocked for {delta_time:.2f}s]")
 
 
-if __name__ == "__main__":
-
-    async def start():
-        handler = ServicesHandler()
-        handler.add_service(Service(ws.start_websocket, name="Socket.IO API"))
-        handler.add_service(
-            Service(
-                bot.start_bot,
-                name="Discord Bot",
-                # loops=[asyncio.get_event_loop()],
-            )
+async def start():
+    handler = ServicesHandler()
+    handler.add_service(Service(ws.start_websocket, name="Socket.IO API"))
+    handler.add_service(
+        Service(
+            bot.start_bot,
+            name="Discord Bot",
+            # loops=[asyncio.get_event_loop()],
         )
-        handler.add_service(
-            Service(
-                process_transcripts,
-                name="Transcripts Queue Consumer",
-            )
+    )
+    handler.add_service(
+        Service(
+            process_transcripts,
+            name="Transcripts Queue Consumer",
         )
+    )
 
-        if config.is_debug():
-            handler.add_service(Service(monitor_loop))
+    if config.is_debug():
+        handler.add_service(Service(monitor_loop))
 
-        await handler.run_all_services()
-
+    # Run everything
     config.load_variables()
     Model.load_model()
+    await handler.run_all_services()
 
+
+if __name__ == "__main__":
     asyncio.run(start())
-    # bot.run_bot()
