@@ -1,4 +1,7 @@
+from .listeners import load_listeners
 from .server import start_websocket
-from .transcripts import send_transcript
+from .transcripts import process_transcripts
 
-__all__ = ["start_websocket", "send_transcript"]
+load_listeners()
+
+__all__ = ["start_websocket", "process_transcripts"]

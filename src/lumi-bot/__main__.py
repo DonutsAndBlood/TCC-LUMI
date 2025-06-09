@@ -1,7 +1,11 @@
 import asyncio
 
+import bot.main as bot
 import config
+import websocket as ws
+from bot.whisper import Model
 from service import Service, ServicesHandler
+from websocket import process_transcripts
 
 
 async def monitor_loop():
@@ -14,9 +18,6 @@ async def monitor_loop():
 
 
 if __name__ == "__main__":
-    import bot.main as bot
-    import websocket as ws
-    from bot.whisper import Model
 
     async def start():
         handler = ServicesHandler()
@@ -25,14 +26,20 @@ if __name__ == "__main__":
             Service(
                 bot.start_bot,
                 name="Discord Bot",
-                loops=[asyncio.get_event_loop()],
+                # loops=[asyncio.get_event_loop()],
+            )
+        )
+        handler.add_service(
+            Service(
+                process_transcripts,
+                name="Transcripts Queue Consumer",
             )
         )
         handler.add_service(Service(monitor_loop))
         await handler.run_all_services()
 
     config.load_variables()
-    # Model.load_model()
+    Model.load_model()
 
-    # asyncio.run(start(), debug=debug_mode)
+    asyncio.run(start())
     # bot.run_bot()
