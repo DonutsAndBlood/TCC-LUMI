@@ -11,6 +11,7 @@ class Service:
 
     name: str
     running: bool
+    thread: bool
     task: Task[Awaitable[Any]] | None
     func: Callable[[], Awaitable[Any]]
     context: Context
@@ -22,18 +23,22 @@ class Service:
         /,
         context: Context | None = None,
         name: str | None = None,
+        thread: bool = False,
         loops: List[AbstractEventLoop] | None = None,
     ):
         """
         Initialize the Service with a function to run.
 
         :param func: A callable that returns an Awaitable (e.g., an async function).
+        :param name: Name of the service. If None, func.__name__ is used instead.
+        :param thread: Should the service run in another thread.
         """
         self.name = name or func.__name__
         self.running = False
         self.task = None
         self.func = func
         self.context = context or Context()
+        self.thread = thread
         self.loops = loops or []
 
     async def __call__(self) -> Any:
