@@ -38,4 +38,7 @@
 
 	// Black
 	"black-formatter.cwd": "${workspaceFolder}",
+
+	// Isort
+	"isort.args": [ "--profile", "black" ]
 }
