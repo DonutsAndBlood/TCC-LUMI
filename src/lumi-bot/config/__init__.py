@@ -6,14 +6,18 @@ from dotenv import find_dotenv, load_dotenv
 
 
 class Key(StrEnum):
+    """Environment variables keys."""
+
     DISCORD_TOKEN = "DISCORD_TOKEN"
     API_URL = "API_URL"
     API_PORT = "API_PORT"
     ENV = "ENV"
 
 
-class Defaults:
-    DISCORD_TOKEN = None
+class Defaults(StrEnum):
+    """Default values for environment variables."""
+
+    DISCORD_TOKEN = ""
     API_URL = "localhost"
     API_PORT = "25565"
     ENV = "production"
@@ -31,8 +35,12 @@ def load_variables():
     variables_debug(env_path)
 
 
-def get(key: Key) -> str | None:
-    return os.getenv(key)
+def get(key: Key) -> str:
+    """Returns the value of an environment variable."""
+    value = os.getenv(key, Defaults[key.value])
+    if value is None or len(value) == 0:
+        raise ValueError(f"No value set for variable {key}")
+    return value
 
 
 def variables_debug(path: str) -> None:
