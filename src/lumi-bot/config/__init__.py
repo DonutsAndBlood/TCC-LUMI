@@ -43,6 +43,16 @@ def get(key: Key) -> str:
     return value
 
 
+def is_dev() -> bool:
+    """Returns True if the app is running on development mode."""
+    return get(Key.ENV) == "development"
+
+
+def is_debug() -> bool:
+    """Returns True if debug mode is enabled."""
+    return is_dev()
+
+
 def variables_debug(path: str) -> None:
     """Prints the current environment variables for debugging."""
     logging.debug("Configuration loaded:")

@@ -32,7 +32,7 @@ if __name__ == "__main__":
         handler.add_service(Service(monitor_loop))
         await handler.run_all_services()
 
-    debug_mode = ENV == "development"
+    debug_mode = config.is_dev()
     if debug_mode:
         asyncio.get_event_loop().set_debug(True)
         logging.basicConfig(level=logging.DEBUG)
