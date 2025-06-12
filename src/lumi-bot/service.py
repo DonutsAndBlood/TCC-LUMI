@@ -20,7 +20,7 @@ class Service:
     def __init__(
         self,
         func: Callable[[], Awaitable[Any]],
-        /,
+        *,
         context: Context | None = None,
         name: str | None = None,
         thread: bool = False,
