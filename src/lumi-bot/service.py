@@ -98,7 +98,7 @@ class ServicesHandler:
         async with asyncio.TaskGroup() as tg:
             for service in self.services.values():
                 if not service.running:
-                    self.__create_grouped_task(service, tg)
+                    self.__create_task(service, tg)
             logging.info("All services are now running.")
         del tg
 
@@ -107,23 +107,27 @@ class ServicesHandler:
         self.add_service(service)
         self.run_service(id(service))
 
-    def __create_task(self, service: Service) -> Task[Any]:
+    def __create_task(
+        self,
+        service: Service,
+        tg: Optional[TaskGroup] = None,
+    ) -> Task[Any]:
         """Create an asyncio task for the service.
 
         | Create an asyncio task for the service, marks the service as started and
         | adds a callback to mark the service as stopped when the task is done.
 
         :param Service service: The service to create a task for.
+        :param Optional[TaskGroup] tg: Optional task group to run the task.
         :return Task[Any]: The created asyncio Task.
         """
-        task = asyncio.create_task(service())
-        logging.info("Service %s is now running.", service.name)
-        self.__mark_service_started(service, task)
-        task.add_done_callback(functools.partial(self.__handle_service_done, service))
-        return task
+        task: Task[Any]
+        if tg is None:
+            task = asyncio.create_task(service())
+        else:
+            task = tg.create_task(service())
 
-    def __create_grouped_task(self, service: Service, tg: TaskGroup) -> Task[Any]:
-        task = tg.create_task(service())
+        logging.info("Service %s is now running.", service.name)
         self.__mark_service_started(service, task)
         task.add_done_callback(functools.partial(self.__handle_service_done, service))
         return task
