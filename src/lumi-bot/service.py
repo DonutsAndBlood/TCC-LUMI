@@ -57,24 +57,20 @@ class ServicesHandler:
         self.services = {}
 
     def add_service(self, service: Service) -> int:
-        """
-        Add a service to the handler. \\
-        Returns a unique key for the service.
+        """Add a service to the handler.
 
-        :param service: The Service instance to add.
-        :return int: A unique key (id) for the service.
+        :param Service service: The :class:`service.Service` instance to add.
+        :return int: The id value of the service.
         """
         key = id(service)
         self.services[key] = service
         return key
 
     def add_services(self, services: List[Service]) -> List[int]:
-        """
-        Add multiple services to the handler. \\
-        Returns a unique key for the service.
+        """Add multiple services to the handler.
 
-        :param service: The Service instance to add.
-        :return int: A unique key (id) for the service.
+        :param List[Service] service: The Service instance to add.
+        :return List[int]: The id value of each service.
         """
         for service in services:
             key = id(service)
@@ -112,13 +108,13 @@ class ServicesHandler:
         self.run_service(id(service))
 
     def __create_task(self, service: Service) -> Task[Any]:
-        """
-        Create a asyncio task for the service.
-        This function also marks the service as started and adds a done callback \\
-        to mark it as stopped when the task is done.
+        """Create an asyncio task for the service.
 
-        :param service: The service to create a task for.
-        :return: The created asyncio Task.
+        | Create an asyncio task for the service, marks the service as started and
+        | adds a callback to mark the service as stopped when the task is done.
+
+        :param Service service: The service to create a task for.
+        :return Task[Any]: The created asyncio Task.
         """
         task = asyncio.create_task(service())
         logging.info("Service %s is now running.", service.name)
@@ -139,12 +135,11 @@ class ServicesHandler:
         self.running_count += 1
 
     async def __handle_service_done(self, service: Service, future: Task[Any]) -> None:
-        """
-        Mark a service as stopped.
+        """Mark a service as stopped.
 
-        :param service: The service that has stopped.
-        :param future: The Task of the service that is done.
-        :return: None
+        :param Service service: The service that has stopped.
+        :param Task[Any] future: The Task of the service that is done.
+        :return None:
         """
         service.running = False
         self.running_count -= 1
