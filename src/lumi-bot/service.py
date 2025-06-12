@@ -3,11 +3,28 @@ import functools
 import logging
 from asyncio import AbstractEventLoop, Task, TaskGroup
 from contextvars import Context
-from typing import Any, Awaitable, Callable, Dict, List
+from typing import Any, Awaitable, Callable, Dict, List, Optional
 
 
 class Service:
-    """A class representing an asynchronous service that can be started and managed."""
+    """A class representing a service to be managed by :class:`service.ServiceHandler`.
+
+    | This class wraps a coroutine function, this function can then be managed through
+    | :class:`service.ServiceHandler`. It supports running the coroutine as a
+    | task either in the current event loop, optionally created inside a task group,
+    | or inside a separate thread.
+
+    | It support some optional named parameters to be passed to the coroutine: A custom
+    | function name, a context to be passed to the task, and a boolean to
+    | determine if the function runs in another thread.
+    | It also has two properties:
+    | A task property that returns the current task, and a running property that
+    | returns the status of the coroutine task.
+
+    :param func: The coroutine function.
+    :param Optional[str] name: Custom name for the service (defaults to func.__name__).
+    :param bool thread: Whether the service runs in a separate thread (default False).
+    """
 
     name: str
     running: bool
@@ -21,18 +38,11 @@ class Service:
         self,
         func: Callable[[], Awaitable[Any]],
         *,
-        context: Context | None = None,
-        name: str | None = None,
+        context: Optional[Context] = None,
+        name: Optional[str] = None,
         thread: bool = False,
-        loops: List[AbstractEventLoop] | None = None,
+        loops: Optional[List[AbstractEventLoop]] = None,
     ):
-        """
-        Initialize the Service with a function to run.
-
-        :param func: A callable that returns an Awaitable (e.g., an async function).
-        :param name: Name of the service. If None, func.__name__ is used instead.
-        :param thread: Should the service run in another thread.
-        """
         self.name = name or func.__name__
         self.running = False
         self.task = None
