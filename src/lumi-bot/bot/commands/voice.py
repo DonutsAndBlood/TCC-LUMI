@@ -53,15 +53,15 @@ class Voice(commands.Cog, name="Comandos de Voz"):
         # (fetch criar sessão) return:id para concatenar no link
 
         embed = discord.Embed(
-            title="🎙️ Tradução de voz em libras",
+            title="🎙️ Tradução de Voz para Libras",
             description=(
                 "**Como funciona:**\n"
-                "O bot irá transcrever o áudio do canal de voz em tempo real.\n"
-                "As transcrições serão enviadas no link a seguir 10 segundos:\n\n"
-                "https:teste.com.br\n\n"
-                "- ▶️ Inicia a gravação.\n"
+                "Este bot transcreve em tempo real o áudio captado no canal de voz.\n"
+                "As transcrições finalizadas são enviadas automaticamente para o site, onde são convertidas em Libras.\n\n"
+                "🎧 Ao clicar no botão de gravação, você concorda com o uso da sua voz para fins de tradução.\n\n"
+                "- ▶️ Inicia a captação de áudio.\n"
                 # "- ⏸️ Pausa a gravação.\n"
-                "- ⏹️ Desconecta da chamada.\n\n"
+                "- ⏹️ Encerra e desconecta da chamada.\n"
             ),
             color=discord.Color.blue(),
         )
