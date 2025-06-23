@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import whisper
 
@@ -8,7 +9,7 @@ MODEL = "turbo"
 class Model(whisper.Whisper):  # type: ignore[misc] # (Cannot subclass because Whisper is untyped)
     """Singleton class to manage the Whisper model."""
 
-    _instance: whisper.Whisper = None
+    _instance: Optional[whisper.Whisper] = None
 
     def __new__(cls) -> whisper.Whisper:
         """Create a new instance of the Whisper model if it doesn't exist."""
