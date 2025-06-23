@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import textwrap
 from io import BytesIO
 from typing import Any, Coroutine, Dict, Optional
 
@@ -54,14 +55,19 @@ class Voice(commands.Cog, name="Comandos de Voz"):
 
         embed = discord.Embed(
             title="🎙️ Tradução de Voz para Libras",
-            description=(
-                "**Como funciona:**\n"
-                "Este bot transcreve em tempo real o áudio captado no canal de voz.\n"
-                "As transcrições finalizadas são enviadas automaticamente para o site, onde são convertidas em Libras.\n\n"
-                "🎧 Ao clicar no botão de gravação, você concorda com o uso da sua voz para fins de tradução.\n\n"
-                "- ▶️ Inicia a captação de áudio.\n"
-                # "- ⏸️ Pausa a gravação.\n"
-                "- ⏹️ Encerra e desconecta da chamada.\n"
+            description=textwrap.dedent(
+                """\
+                    **Como funciona:**
+                    Este bot transcreve em tempo real o áudio captado no canal de voz.
+                    As transcrições finalizadas são enviadas automaticamente para o
+                    site, onde são convertidas em Libras.
+
+                    🎧 Ao clicar no botão de gravação, você concorda com o uso da sua
+                    voz para fins de tradução.
+
+                    - ▶️ Iniciar a captação de áudio.
+                    - ⏹️ Encerrar e desconectar da chamada.
+                """
             ),
             color=discord.Color.blue(),
         )
